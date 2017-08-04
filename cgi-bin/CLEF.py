@@ -23,6 +23,8 @@ output_columns = (
     'EXPANDED_HLA_DEFINITION'
 )
 
+null_char = 'NAN'
+
 epitopes_file = '../epitopes_v1.0.1.txt'
 sys.stderr = open("../error-cgi.log", "w")
 
@@ -30,8 +32,8 @@ form = cgi.FieldStorage()
 patients = form.getvalue("patients_input")
 protein = form.getvalue("protein_selection")
 
-def printHtmlHeaders():
-    print "Content-Type: text/html"
+def printHtmlHeaders(content_type='text/html'):
+    print "Content-Type: {}".format(content_type)
     print
     print """<!DOCTYPE html><html><head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -158,28 +160,51 @@ def print_table_header(columns):
     return ('').join(['<th>{}</th>'.format(x) for x in columns])
 
 def print_result(result, patients):
-    text0 = '<tr>' + \
-    ('<td>{}</td>' * 3).format(
-        result['pid'],
-        protein,
-        result['hla']
-    )
-    text1 = (',').join(['('+(',').join(x.epitope)+')' for x in result['epitopes']])
-    patient_seq = 'NAN'
-    if patients[result['pid']]['aa']:
-        patient_seq = (',').join(['({})'.format(('').join(patients[result['pid']]['aa'][x.start - 1 : x.end])) for x in result['epitopes']])
-    if text1:
-        text2 = ('<td>{}</td>' * 6).format(
-            text1,
-            patient_seq,
-            (',').join(['('+(',').join(x.hlas)+')' for x in result['epitopes']]),
-            (',').join(['({}-{})'.format(x.start, x.end) for x in result['epitopes']]),
-            (',').join(['({})'.format(x.source) for x in result['epitopes']]),
-            'Y' if result['expanded'] else 'NAN'
-        ) + '</tr>'
-    else:
-        text2 = ('<td>NAN</td>' * 6) + '</tr>'
-    return text0 + text2
+    expanded = '1' if result['expanded'] else '0'
+    # print 'pid: {}'.format(result['pid'])
+    # for ep in result['epitopes']:
+        # print 'ep: {}'.format(ep)
+        # print
+    lines = [
+        ('<td>{}</td>'*9).format(
+            result['pid'],
+            protein,
+            result['hla'],
+            (',').join([x for x in ep.epitope]),
+            patients[result['pid']]['aa'][ep.start - 1 : ep.end] if patients[result['pid']]['aa'] else null_char,
+            (',').join([hla for hla in ep.hlas]),
+            '{}-{}'.format(ep.start, ep.end),
+            ep.source,
+            expanded
+        ) for ep in result['epitopes']
+    ]
+    # print 'lines: {}'.format(lines)
+    # print
+    return ('').join(['<tr>{}</tr>'.format(x) for x in lines])
+    
+# def print_result(result, patients):
+    # text0 = '<tr>' + \
+    # ('<td>{}</td>' * 3).format(
+        # result['pid'],
+        # protein,
+        # result['hla']
+    # )
+    # text1 = (',').join(['('+(',').join(x.epitope)+')' for x in result['epitopes']])
+    # patient_seq = 'NAN'
+    # if patients[result['pid']]['aa']:
+        # patient_seq = (',').join(['({})'.format(('').join(patients[result['pid']]['aa'][x.start - 1 : x.end])) for x in result['epitopes']])
+    # if text1:
+        # text2 = ('<td>{}</td>' * 6).format(
+            # text1,
+            # patient_seq,
+            # (',').join(['('+(',').join(x.hlas)+')' for x in result['epitopes']]),
+            # (',').join(['({}-{})'.format(x.start, x.end) for x in result['epitopes']]),
+            # (',').join(['({})'.format(x.source) for x in result['epitopes']]),
+            # 'Y' if result['expanded'] else 'NAN'
+        # ) + '</tr>'
+    # else:
+        # text2 = ('<td>NAN</td>' * 6) + '</tr>'
+    # return text0 + text2
 
 def display_results(results, patients, protein, output_columns):
     print '<table class="table table-bordered" id="output_table">'
@@ -212,6 +237,7 @@ for e in epitopes:
     e.r2 = set(e.r2)
     e.r4 = set(e.r4)
 
+#printHtmlHeaders(content_type='text/plain')
 printHtmlHeaders()
 
 patients = load_patients(parse(patients))

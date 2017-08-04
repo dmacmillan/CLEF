@@ -51,7 +51,7 @@ class Epitope:
             if header:
                 f.readline()
             for line in f:
-                line = Epitope(*line.strip().split('\t'))
+                line = Epitope(*[x.translate(None,'"') for x in line.strip().split('\t')])
                 if line.protein not in only_proteins:
                     continue
                 line.epitope = line.epitope.split(',')
