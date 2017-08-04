@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="../css/jumbotron.css" rel="stylesheet">
+    
+    <title>CLEF - CTL Epitope Finder</title>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">Navbar</a>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#">Disabled</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li>
+        </ul>
+        <!--
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+        -->
+      </div>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+          <div class="row">
+            <div class="col-1">
+                <svg class="img-fluid">
+                    <rect width="30" height="100" style="fill:#666"></rect>
+                    <rect x="10" y="10" width="30" height="100" style="fill:red"></rect>
+                    <rect x="20" y="20" width="30" height="100" style="fill:#666"></rect>
+                </svg>
+            </div>
+            <div class="col">
+                <h1 class="display-5">CLEF - CTL Epitope Finder</h1>
+                <p>
+                Given a list of individuals and their associated HLA profiles, return locations of CTL epitopes restricted by the individual's HLA. If HIV sequence is provided, also return the sequence of each patient at each restricted CTL epitope.
+                </p>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="container">
+    
+        <form action="../cgi-bin/CLEF.py" method="post" id="mainform">
+        
+            <!-- Textarea -->
+            <label for="patients">Patient HLA and sequence input</label>
+            <textarea id="patients" class="form-control" name="patients_input" autofocus required placeholder="Input patient HLA information" rows=10></textarea>
+            
+            <!-- Radio buttons -->
+            <legend>Protein selection</legend>
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-secondary active">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Gag" checked>
+                    Gag
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Pol">
+                    Pol
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Vif">
+                    Vif
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Vpr">
+                    Vpr
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Vpu">
+                    Vpu
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Tat">
+                    Tat
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Rev">
+                    Rev
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Env">
+                    Env
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="protein_selection" autocomplete="off" value="Nef">
+                    Nef
+                </label>
+            </div>
+        </form>
+        
+        <button name="runPHAGE" class="btn btn-primary" value="submit" type="submit" form="mainform">Run</button>
+        <button id="load_sample" type="button" class="btn btn-primary">Load example</button>
+        <button id="clear" type="button" class="btn btn-primary">Clear all</button>
+    
+    </div>
+        <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+        <script src="../cgi-bin/script.js"></script>
+    </body>
+</html>
+
+<!--
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="stylesheet" href="../css/style.css">
+        <title>CLEF - CTL Epitope Finder</title>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="../cgi-bin/script.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="title">
+                <h1>CLEF - CTL Epitope Finder</h1>
+                <p>
+                    Given a list of individuals and their associated HLA profiles, return locations of CTL epitopes restricted by the individual's HLA. If HIV sequence is provided, also return the sequence of each patient at each restricted CTL epitope.
+                </p>
+            </div>
+            <div class="spacer"></div>
+            <div class="row usage">
+                <h1>Usage</h1>
+                <div class="col-1-2">
+                    In the left-hand box, enter your HLA-associated polymorphism data in <b>TAB-separated</b> columns:
+                    <ol>
+                        <li>HLA allele</li>
+                        <li>HIV codon position followed by amino acid</li>
+                        <li>Must be one of: "adapted" or "nonadapted"</li>
+                    </ol>
+                </div>
+                <div class="col-1-2">
+                    <ul>
+                  <li>
+                     In the right-hand box, the fist column must be a unique identifier for that patient/sequence
+                  </li>
+                  <li>
+                     The next 6 columns (tab-delimited) should contain HLA type information such as "B*51:01" or "B5101". The order does not matter. 
+                  </li>
+                  <li>
+                     The last column should be the nucleotide sequence of that patient's HIV sequence. Translation is done in-house, and will attempt to resolve mixture nucleotides into all potential amino acids. If any of these potential amino acids matches any of the associated polymorphisms, it is considered a match.
+                  </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <form action="../cgi-bin/PHAGE.py" method="post" id="mainform">
+                <div class="grid">
+                    <div class="col-1-2">
+                        <textarea id="hlas" name="hlas_input" autofocus required placeholder="Input HLA types and polymorphisms"></textarea>
+                        <div class="clearbutton">Clear</div>
+                    </div>
+                    <div class="col-1-2">
+                        <textarea id="patients" name="patients_input" required placeholder="Input patient information"></textarea>
+                        <div class="clearbutton">Clear</div>
+                    </div>
+                    <h1>Protein of Interest</h1>
+                    <div class="col-1-2">
+                        <input type="radio" name="protein_selection" value="Gag" checked>Gag</input>
+                        <input type="radio" name="protein_selection" value="Pol">Pol</input>
+                        <input type="radio" name="protein_selection" value="Vif">Vif</input>
+                        <input type="radio" name="protein_selection" value="Vpr">Vpr</input>
+                        <input type="radio" name="protein_selection" value="Vpu">Vpu</input>
+                        <input type="radio" name="protein_selection" value="Tat">Tat</input>
+                        <input type="radio" name="protein_selection" value="Rev">Rev</input>
+                        <input type="radio" name="protein_selection" value="Env">Env</input>
+                        <input type="radio" name="protein_selection" value="Nef">Nef</input>
+                    </div>
+                </div>
+            </form>
+            <div class="spacer"></div>
+            <button id="load_sample" class="btn-blank btn-grey round-sm">Load Sample</button>
+            <button id="clear" class="btn-blank btn-red round-sm">Clear All</button>
+            <button name="runPHAGE" value="submit" class="btn-blank btn-blue round-sm" type="submit" form="mainform">Submit</button>
+        </div>
+    </body>
+</html>
+-->
