@@ -7,6 +7,8 @@ from Codon import *
 from Epitope import *
 import logging
 from itertools import *
+from datetime import datetime
+import os
 
 logging.basicConfig(filename='log', level='DEBUG', filemode='w')
 
@@ -31,6 +33,7 @@ sys.stderr = open("../error-cgi.log", "w")
 form = cgi.FieldStorage()
 patients = form.getvalue("patients_input")
 protein = form.getvalue("protein_selection")
+download = bool(form.getvalue("download"))
 
 def printHtmlHeaders(content_type='text/html'):
     print "Content-Type: {}".format(content_type)
@@ -159,12 +162,8 @@ def analyze_patient(patient, patient_id, epitopes):
 def print_table_header(columns):
     return ('').join(['<th>{}</th>'.format(x) for x in columns])
 
-def print_result(result, patients):
+def print_html_result(result, patients):
     expanded = '1' if result['expanded'] else '0'
-    # print 'pid: {}'.format(result['pid'])
-    # for ep in result['epitopes']:
-        # print 'ep: {}'.format(ep)
-        # print
     lines = [
         ('<td>{}</td>'*9).format(
             result['pid'],
@@ -178,52 +177,38 @@ def print_result(result, patients):
             expanded
         ) for ep in result['epitopes']
     ]
-    # print 'lines: {}'.format(lines)
-    # print
     return ('').join(['<tr>{}</tr>'.format(x) for x in lines])
-    
-# def print_result(result, patients):
-    # text0 = '<tr>' + \
-    # ('<td>{}</td>' * 3).format(
-        # result['pid'],
-        # protein,
-        # result['hla']
-    # )
-    # text1 = (',').join(['('+(',').join(x.epitope)+')' for x in result['epitopes']])
-    # patient_seq = 'NAN'
-    # if patients[result['pid']]['aa']:
-        # patient_seq = (',').join(['({})'.format(('').join(patients[result['pid']]['aa'][x.start - 1 : x.end])) for x in result['epitopes']])
-    # if text1:
-        # text2 = ('<td>{}</td>' * 6).format(
-            # text1,
-            # patient_seq,
-            # (',').join(['('+(',').join(x.hlas)+')' for x in result['epitopes']]),
-            # (',').join(['({}-{})'.format(x.start, x.end) for x in result['epitopes']]),
-            # (',').join(['({})'.format(x.source) for x in result['epitopes']]),
-            # 'Y' if result['expanded'] else 'NAN'
-        # ) + '</tr>'
-    # else:
-        # text2 = ('<td>NAN</td>' * 6) + '</tr>'
-    # return text0 + text2
 
-def display_results(results, patients, protein, output_columns):
+def print_delim_result(result, patients, delim='\t'):
+    expanded = '1' if result['expanded'] else '0'
+    lines = [
+        (delim).join(
+            [
+                result['pid'],
+                protein,
+                result['hla'],
+                (';').join([x for x in ep.epitope]),
+                str(patients[result['pid']]['aa'][ep.start - 1 : ep.end]) if patients[result['pid']]['aa'] else null_char,
+                (';').join([hla for hla in ep.hlas]),
+                '{}-{}'.format(ep.start, ep.end),
+                ep.source,
+                expanded
+            ]
+        ) for ep in result['epitopes']
+    ]
+    return (os.linesep).join(lines)
+
+def display_html_results(results, patients, protein, output_columns):
     print '<table class="table table-bordered" id="output_table">'
     print print_table_header(output_columns)
     for result in results:
-        print print_result(result, patients)
+        print print_html_result(result, patients)
     print '</table>'
-    
-output_format = ('\t').join([
-    'PATIENT_ID',
-    'HIV_PROTEIN',
-    'HLA_ALLELE',
-    'CTL_EPITOPE',
-    'PATIENT_CTL_SEQUENCE',
-    'HLA_RESTRICTION',
-    'EPITOPE_COORDINATES',
-    'EPITOPE_SOURCE',
-    'EXPANDED_HLA_DEFINITION'
-])
+
+def display_delim_results(results, patients, protein, output_columns, delim='\t'):
+    print (delim).join(output_columns)
+    for result in results:
+        print print_delim_result(result, patients, delim=delim)
 
 epitopes = Epitope.parseEpitopes(epitopes_file, only_proteins=[protein])
 for e in epitopes:
@@ -238,7 +223,6 @@ for e in epitopes:
     e.r4 = set(e.r4)
 
 #printHtmlHeaders(content_type='text/plain')
-printHtmlHeaders()
 
 patients = load_patients(parse(patients))
 
@@ -247,5 +231,10 @@ for patient_id in patients:
     hits = analyze_patient(patients[patient_id], patient_id, epitopes)
     for hit in hits:
         results.append(hit)
-
-display_results(results, patients, protein, output_columns)
+if not download:
+    printHtmlHeaders()
+    display_html_results(results, patients, protein, output_columns)
+else:
+    name = datetime.now().strftime('%Y.%m.%d.%H:%M:%S.clef.tsv')
+    printFileHeaders(name)
+    display_delim_results(results, patients, protein, output_columns)
